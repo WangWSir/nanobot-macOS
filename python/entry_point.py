@@ -71,6 +71,34 @@ def _uv_python_target() -> str:
             return str(cand)
     return _sh.which('python3') or '/usr/bin/python3'
 
+def _ensure_exec_path():
+    """把 CLI-apps 安装目录加进 nanobot exec 工具的 PATH。
+
+    uv pip install 到项目 venv 后，cli-anything-* 可执行文件落在
+    <venv>/bin。nanobot exec 工具默认 PATH 不含该目录，导致安装成功但
+    调用时报 "cli-anything-xxx 不在 nanobot 能访问的 PATH 里"。
+
+    通过 config.json 的 tools.exec.pathPrepend 持久化补全 PATH，
+    下次网关启动自动生效。
+    """
+    if not getattr(sys, 'frozen', False):
+        return
+    cfg_path = Path.home() / ".nanobot" / "config.json"
+    if not cfg_path.is_file():
+        return
+    try:
+        import json
+        cfg = json.loads(cfg_path.read_text())
+        exec_cfg = cfg.setdefault("tools", {}).setdefault("exec", {})
+        prepend = exec_cfg.get("pathPrepend", "")
+        venv_bin = str(Path(_uv_python_target()).parent)
+        if venv_bin not in prepend.split(os.pathsep):
+            exec_cfg["pathPrepend"] = (prepend + os.pathsep if prepend else "") + venv_bin
+            cfg_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+            print(f"[nanobot-server] exec pathPrepend set to {exec_cfg['pathPrepend']}", flush=True)
+    except Exception as e:
+        print(f"[nanobot-server] ensure_exec_path failed: {e}", file=sys.stderr, flush=True)
+
 def _patch_cli_apps_pip():
     """frozen 模式下把 CliAppManager 的 pip 安装/卸载路由到 uv，
     避免 `sys.executable -m pip` 走 nanobot CLI 报错。
@@ -147,18 +175,6 @@ def _run_cli_apps(args):
         import shutil as _sh
         uv = _sh.which('uv')
         if uv:
-            # uv pip 需要明确目标 Python：优先项目构建 venv，其次用户全局 uv tool venv
-            py_target = None
-            for cand in (
-                Path.home() / "nanobot-macOS" / "python" / ".venv" / "bin" / "python",
-                Path.home() / ".local" / "share" / "uv" / "tools" / "nanobot-ai" / "bin" / "python",
-            ):
-                if cand.is_file():
-                    py_target = str(cand)
-                    break
-            if py_target is None:
-                py_target = _sh.which('python3') or '/usr/bin/python3'
-
             def _pip_install_argv(self, app, update=False):
                 install_cmd = str(app.get('install_cmd') or '')
                 pkg = ''
@@ -175,8 +191,7 @@ def _run_cli_apps(args):
                     pkg = str(app.get('pip_package') or app.get('entry_point') or '').strip()
                 if not pkg:
                     return []
-                py_target = _uv_python_target()
-                argv = [uv, 'pip', 'install', '--python', py_target]
+                argv = [uv, 'pip', 'install', '--python', _uv_python_target()]
                 if update:
                     argv += ['--force-reinstall']
                 argv += [pkg]
@@ -188,8 +203,7 @@ def _run_cli_apps(args):
                     distribution = str(app.get('entry_point') or '').strip()
                 if not distribution:
                     return []
-                py_target = _uv_python_target()
-                return [uv, 'pip', 'uninstall', '-y', '--python', py_target, distribution]
+                return [uv, 'pip', 'uninstall', '-y', '--python', _uv_python_target(), distribution]
 
             CliAppManager._pip_available = lambda self: True
             CliAppManager._pip_install_argv = _pip_install_argv
@@ -216,9 +230,14 @@ def _run_cli_apps(args):
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if not result.get("last_action", {}).get("ok", True):
         sys.exit(1)
+    # 安装/更新后补全 exec PATH，让 agent 能直接调用新装的 CLI 应用
+    if action in ("install", "update"):
+        _ensure_exec_path()
 
 def _run_gateway_in_foreground():
     _patch_cli_apps_pip()
+    # 补全 exec PATH（把 venv bin 加入 tools.exec.pathPrepend）
+    _ensure_exec_path()
     from nanobot.cli.gateway_runtime import _run_gateway
     from nanobot.cli.runtime_config import _load_runtime_config, _provider_setup_error
     from nanobot.cli.webui_support import _prepare_webui_bundle_for_gateway
