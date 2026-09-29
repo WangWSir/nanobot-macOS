@@ -1,3 +1,4 @@
+为了自己用！！！
 # nanobot macOS 桌面应用
 
 Electron 壳 + PyInstaller 打包的 `nanobot-server`，开箱即用。
