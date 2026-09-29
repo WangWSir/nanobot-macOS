@@ -1,0 +1,58 @@
+{
+  "name": "nanobot-desktop",
+  "version": "1.0.0",
+  "description": "nanobot Desktop — WebUI in an Electron shell",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:python": "cd python && .venv/bin/pyinstaller -y nanobot-server.spec",
+    "upgrade": "uv pip install -p python/.venv -U nanobot-ai mcp>=2.0 && npm run build:python",
+    "build:mac": "electron-builder --mac && node scripts/clean-dist.js",
+    "build": "npm run upgrade && npm run build:mac"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "@electron/notarize": "^2.3.0"
+  },
+  "build": {
+    "appId": "com.yourname.nanobot-desktop",
+    "productName": "nanobot",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64"] },
+        { "target": "zip", "arch": ["arm64"] }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "extraResources": [
+      {
+        "from": "python/dist/nanobot-server",
+        "to": "nanobot-server",
+        "filter": ["**/*"]
+      }
+    ],
+    "asar": true,
+    "files": [
+      "electron/**/*",
+      "!python/**/*"
+    ],
+    "publish": null,
+    "afterSign": "scripts/notarize.js"
+  }
+}

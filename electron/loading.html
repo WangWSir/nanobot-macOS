@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; margin: 0; background: #1a1a2e; color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .loader { text-align: center; }
+    .spinner {
+      width: 40px; height: 40px; margin: 0 auto 20px;
+      border: 3px solid #333; border-top-color: #6c63ff;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    p { opacity: 0.6; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>正在启动 nanobot…</p>
+  </div>
+</body>
+</html>
