@@ -56,7 +56,7 @@
  [],
  False,
  False,
- 1790666417,
+ 1790668850,
  [('run',
    '/Users/mac/nanobot-macOS/python/.venv/lib/python3.11/site-packages/PyInstaller/bootloader/Darwin-64bit/run',
    'EXECUTABLE')],

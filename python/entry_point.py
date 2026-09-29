@@ -93,9 +93,10 @@ def _ensure_exec_path():
         prepend = exec_cfg.get("pathPrepend", "")
         venv_bin = str(Path(_uv_python_target()).parent)
         if venv_bin not in prepend.split(os.pathsep):
-            exec_cfg["pathPrepend"] = (prepend + os.pathsep if prepend else "") + venv_bin
-            cfg_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
-            print(f"[nanobot-server] exec pathPrepend set to {exec_cfg['pathPrepend']}", flush=True)
+            prepend = (prepend + os.pathsep if prepend else "") + venv_bin
+        exec_cfg["pathPrepend"] = prepend
+        cfg_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+        print(f"[nanobot-server] exec pathPrepend set to {exec_cfg['pathPrepend']}", flush=True)
     except Exception as e:
         print(f"[nanobot-server] ensure_exec_path failed: {e}", file=sys.stderr, flush=True)
 

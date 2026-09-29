@@ -26,8 +26,16 @@ function serverPath() {
   return path.join(serverDir(), 'nanobot-server');
 }
 
+function venvBin() {
+  const isDev = !app.isPackaged;
+  return isDev
+    ? path.join(__dirname, '..', 'python', '.venv', 'bin')
+    : '';
+}
+
 function startNanobot() {
   const dir = serverDir();
+  const extraPath = venvBin();
 
   nanobotProcess = spawn(serverPath(), [], {
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -35,7 +43,9 @@ function startNanobot() {
     cwd: dir,
     env: {
       ...process.env,
-      PATH: `/usr/local/bin:/opt/homebrew/bin:${process.env.PATH || ''}`,
+      PATH: extraPath
+        ? `/usr/local/bin:/opt/homebrew/bin:${extraPath}:${process.env.PATH || ''}`
+        : `/usr/local/bin:/opt/homebrew/bin:${process.env.PATH || ''}`,
     },
   });
 

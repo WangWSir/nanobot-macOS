@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "build:python": "cd python && .venv/bin/pyinstaller -y nanobot-server.spec",
-    "upgrade": "uv pip install -p python/.venv -U nanobot-ai mcp>=2.0 && npm run build:python",
+    "upgrade": "uv pip install -p python/.venv -U nanobot-ai \"mcp>=1.26.0,<2.0.0\" && npm run build:python",
     "build:mac": "electron-builder --mac && node scripts/clean-dist.js",
     "build": "npm run upgrade && npm run build:mac"
   },

@@ -1,8 +1,9 @@
 from .client.session import ClientSession
+from .client.session_group import ClientSessionGroup
 from .client.stdio import StdioServerParameters, stdio_client
 from .server.session import ServerSession
 from .server.stdio import stdio_server
-from .shared.exceptions import McpError
+from .shared.exceptions import McpError, UrlElicitationRequiredError
 from .types import (
     CallToolRequest,
     ClientCapabilities,
@@ -12,6 +13,7 @@ from .types import (
     CompleteRequest,
     CreateMessageRequest,
     CreateMessageResult,
+    CreateMessageResultWithTools,
     ErrorData,
     GetPromptRequest,
     GetPromptResult,
@@ -40,7 +42,12 @@ from .types import (
     ResourcesCapability,
     ResourceUpdatedNotification,
     RootsCapability,
+    SamplingCapability,
+    SamplingContent,
+    SamplingContextCapability,
     SamplingMessage,
+    SamplingMessageContentBlock,
+    SamplingToolsCapability,
     ServerCapabilities,
     ServerNotification,
     ServerRequest,
@@ -49,7 +56,10 @@ from .types import (
     StopReason,
     SubscribeRequest,
     Tool,
+    ToolChoice,
+    ToolResultContent,
     ToolsCapability,
+    ToolUseContent,
     UnsubscribeRequest,
 )
 from .types import (
@@ -63,8 +73,11 @@ __all__ = [
     "ClientRequest",
     "ClientResult",
     "ClientSession",
+    "ClientSessionGroup",
+    "CompleteRequest",
     "CreateMessageRequest",
     "CreateMessageResult",
+    "CreateMessageResultWithTools",
     "ErrorData",
     "GetPromptRequest",
     "GetPromptResult",
@@ -75,6 +88,7 @@ __all__ = [
     "InitializedNotification",
     "JSONRPCError",
     "JSONRPCRequest",
+    "JSONRPCResponse",
     "ListPromptsRequest",
     "ListPromptsResult",
     "ListResourcesRequest",
@@ -89,12 +103,17 @@ __all__ = [
     "PromptsCapability",
     "ReadResourceRequest",
     "ReadResourceResult",
+    "Resource",
     "ResourcesCapability",
     "ResourceUpdatedNotification",
-    "Resource",
     "RootsCapability",
+    "SamplingCapability",
+    "SamplingContent",
+    "SamplingContextCapability",
     "SamplingMessage",
+    "SamplingMessageContentBlock",
     "SamplingRole",
+    "SamplingToolsCapability",
     "ServerCapabilities",
     "ServerNotification",
     "ServerRequest",
@@ -105,10 +124,12 @@ __all__ = [
     "StopReason",
     "SubscribeRequest",
     "Tool",
+    "ToolChoice",
+    "ToolResultContent",
     "ToolsCapability",
+    "ToolUseContent",
     "UnsubscribeRequest",
+    "UrlElicitationRequiredError",
     "stdio_client",
     "stdio_server",
-    "CompleteRequest",
-    "JSONRPCResponse",
 ]
